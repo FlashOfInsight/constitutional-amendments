@@ -1,0 +1,8 @@
+{
+  "name": "constitutional-amendments",
+  "version": "1.0.0",
+  "description": "Tracker for proposed Constitutional Amendments in the 119th Congress",
+  "scripts": {
+    "dev": "vercel dev"
+  }
+}
