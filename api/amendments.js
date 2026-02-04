@@ -33,11 +33,19 @@ async function fetchCosponsors(bill) {
 
 module.exports = async function handler(req, res) {
   try {
+    // Check API key
+    if (!API_KEY) {
+      console.error("CONGRESS_API_KEY not set");
+      return res.status(500).json({ error: "API key not configured" });
+    }
+
     // Fetch both House and Senate joint resolutions
     const [hjresBills, sjresBills] = await Promise.all([
       fetchBillsByType("hjres"),
       fetchBillsByType("sjres")
     ]);
+
+    console.log(`Fetched ${hjresBills.length} hjres, ${sjresBills.length} sjres`);
 
     const allBills = [...hjresBills, ...sjresBills];
 
@@ -45,6 +53,8 @@ module.exports = async function handler(req, res) {
     const amendmentBills = allBills.filter(bill =>
       bill.title && bill.title.includes("Proposing an amendment to the Constitution")
     );
+
+    console.log(`Filtered to ${amendmentBills.length} constitutional amendments`);
 
     // Fetch details for each amendment
     const amendments = await Promise.all(
