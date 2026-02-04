@@ -59,8 +59,10 @@ module.exports = async function handler(req, res) {
     const allBills = [...hjresBills, ...sjresBills];
 
     // Filter for constitutional amendments
+    // H.J.Res: "Proposing an amendment to the Constitution..."
+    // S.J.Res: "A joint resolution proposing an amendment to the Constitution..."
     const amendmentBills = allBills.filter(bill =>
-      bill.title && bill.title.includes("Proposing an amendment to the Constitution")
+      bill.title && bill.title.toLowerCase().includes("proposing an amendment to the constitution")
     );
 
     console.log(`Filtered to ${amendmentBills.length} constitutional amendments`);
