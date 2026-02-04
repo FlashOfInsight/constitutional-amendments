@@ -37,7 +37,8 @@ async function fetchCosponsors(bill) {
   const response = await fetch(url);
   if (!response.ok) return 0;
   const data = await response.json();
-  return data.cosponsors?.length || 0;
+  // Use pagination.count for total, not array length (API paginates at 20)
+  return data.pagination?.count || data.cosponsors?.length || 0;
 }
 
 module.exports = async function handler(req, res) {
