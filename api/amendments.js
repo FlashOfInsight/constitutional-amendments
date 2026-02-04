@@ -105,12 +105,6 @@ module.exports = async function handler(req, res) {
       count: validAmendments.length,
       congress: CONGRESS,
       lastUpdated: new Date().toISOString(),
-      debug: {
-        hjresCount: hjresBills.length,
-        sjresCount: sjresBills.length,
-        filteredCount: amendmentBills.length,
-        apiKeySet: !!API_KEY
-      },
       amendments: validAmendments
     });
 
