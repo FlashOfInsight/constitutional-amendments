@@ -16,11 +16,20 @@ async function fetchBillsByType(type) {
 }
 
 async function fetchBillDetails(bill) {
-  const url = `${bill.url}?api_key=${API_KEY}`;
-  const response = await fetch(url);
-  if (!response.ok) return null;
-  const data = await response.json();
-  return data.bill;
+  try {
+    // bill.url already has ?format=json, so use & for api_key
+    const url = `${bill.url}&api_key=${API_KEY}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error(`Detail fetch failed for ${bill.number}: ${response.status}`);
+      return null;
+    }
+    const data = await response.json();
+    return data.bill;
+  } catch (err) {
+    console.error(`Detail fetch error for ${bill.number}:`, err.message);
+    return null;
+  }
 }
 
 async function fetchCosponsors(bill) {
