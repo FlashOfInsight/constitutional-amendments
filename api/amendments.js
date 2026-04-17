@@ -41,6 +41,16 @@ async function fetchCosponsors(bill) {
   return data.pagination?.count || data.cosponsors?.length || 0;
 }
 
+async function processBatch(items, fn, batchSize = 5) {
+  const results = [];
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    const batchResults = await Promise.all(batch.map(fn));
+    results.push(...batchResults);
+  }
+  return results;
+}
+
 module.exports = async function handler(req, res) {
   try {
     // Check API key
@@ -68,35 +78,34 @@ module.exports = async function handler(req, res) {
 
     console.log(`Filtered to ${amendmentBills.length} constitutional amendments`);
 
-    // Fetch details for each amendment
-    const amendments = await Promise.all(
-      amendmentBills.map(async (bill) => {
-        const [details, cosponsorsCount] = await Promise.all([
-          fetchBillDetails(bill),
-          fetchCosponsors(bill)
-        ]);
+    // Fetch details for each amendment in batches of 5 to avoid
+    // congress.gov rate limits and Vercel function timeouts
+    const amendments = await processBatch(amendmentBills, async (bill) => {
+      const [details, cosponsorsCount] = await Promise.all([
+        fetchBillDetails(bill),
+        fetchCosponsors(bill)
+      ]);
 
-        if (!details) return null;
+      if (!details) return null;
 
-        const sponsor = details.sponsors?.[0] || {};
+      const sponsor = details.sponsors?.[0] || {};
 
-        return {
-          number: `${bill.type} ${bill.number}`,
-          title: bill.title,
-          introducedDate: details.introducedDate,
-          sponsor: {
-            name: sponsor.fullName || sponsor.name || "Unknown",
-            party: sponsor.party || "Unknown",
-            state: sponsor.state || "Unknown",
-            district: sponsor.district || null
-          },
-          status: details.latestAction?.text || "Introduced",
-          statusDate: details.latestAction?.actionDate || details.introducedDate,
-          cosponsorsCount: cosponsorsCount,
-          congressUrl: `https://www.congress.gov/bill/${CONGRESS}th-congress/${bill.type.toLowerCase().replace(".", "-")}/${bill.number}`
-        };
-      })
-    );
+      return {
+        number: `${bill.type} ${bill.number}`,
+        title: bill.title,
+        introducedDate: details.introducedDate,
+        sponsor: {
+          name: sponsor.fullName || sponsor.name || "Unknown",
+          party: sponsor.party || "Unknown",
+          state: sponsor.state || "Unknown",
+          district: sponsor.district || null
+        },
+        status: details.latestAction?.text || "Introduced",
+        statusDate: details.latestAction?.actionDate || details.introducedDate,
+        cosponsorsCount: cosponsorsCount,
+        congressUrl: `https://www.congress.gov/bill/${CONGRESS}th-congress/${bill.type.toLowerCase().replace(".", "-")}/${bill.number}`
+      };
+    }, 5);
 
     // Filter out nulls and sort by introduced date (most recent first)
     const validAmendments = amendments

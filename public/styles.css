@@ -131,9 +131,11 @@ h1 {
 }
 
 .amendment-link {
+  display: inline-block;
   font-size: 0.85rem;
   color: #3b5998;
   text-decoration: none;
+  padding: 0.4rem 0;
 }
 
 .amendment-link:hover {
@@ -159,6 +161,10 @@ h1 {
     font-size: 1.4rem;
   }
 
+  .amendment-title {
+    word-break: break-word;
+  }
+
   .amendment-header {
     flex-direction: column;
     align-items: flex-start;
@@ -168,5 +174,13 @@ h1 {
   .amendment-meta {
     flex-direction: column;
     gap: 0.25rem;
+  }
+
+  .sponsor {
+    word-break: break-word;
+  }
+
+  .amendment-link {
+    padding: 0.5rem 0;
   }
 }
